@@ -1,0 +1,3 @@
+[submodule "mc/lib/loguru"]
+	path = mc/lib/loguru
+	url = https://github.com/emilk/loguru.git
