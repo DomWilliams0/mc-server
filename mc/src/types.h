@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <array>
 #include <exception>
+#include <memory>
 
 namespace mc {
     enum class ErrorType {
@@ -38,12 +39,12 @@ namespace mc {
 
         Varint() : Varint(0) {};
 
-        Varint(Int value);
+        explicit Varint(Int value);
 
-        Varint(const mc::Varint::Bytes &bytes);
+        explicit Varint(const mc::Varint::Bytes &bytes);
 
 
-        int get_byte_count() const;
+        unsigned int get_byte_count() const;
 
         Int get_real_value() const;
 
@@ -53,7 +54,7 @@ namespace mc {
 
 
     private:
-        int byte_count;
+        unsigned int byte_count;
         Int real_value;
         Bytes bytes{};
     };
@@ -69,15 +70,15 @@ namespace mc {
         // copied
         String(Varint::Int length, char *str);
 
-        inline const char *value() const { return str; }
+        inline const char *value() const { return str.get(); }
 
         inline const char *operator*() const { return value(); }
 
         inline const Varint &length() const { return len; }
 
     private:
+        std::unique_ptr<char[]> str; // unicode
         Varint len;
-        char *str; // unicode
     };
 
 

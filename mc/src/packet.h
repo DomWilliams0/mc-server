@@ -31,13 +31,13 @@ namespace mc {
 
 
     class PacketHandshake : public BasePacket {
-    protected:
-        void read_body(Buffer &buffer) override;
 
     public:
         explicit PacketHandshake() : BasePacket(0x00) {}
 
         std::string to_string() const override;
+
+        void read_body(Buffer &buffer) override;
 
     public:
         Varint protocol_version;
@@ -60,7 +60,7 @@ namespace mc {
 
     class PacketStatusResponse : public BasePacket {
     public:
-        explicit PacketStatusResponse(const String &status) : BasePacket(0x00), status(status) {}
+        explicit PacketStatusResponse(String &&status) : BasePacket(0x00), status(std::move(status)) {}
 
         std::string to_string() const override;
 

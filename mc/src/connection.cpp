@@ -1,11 +1,13 @@
 #include "connection.h"
 #include "packet.h"
 #include "loguru.hpp"
+#include "util.h"
 
 #include <typeinfo>
 #include <sstream>
 #include <cassert>
 #include <cstring>
+#include <memory>
 
 mc::BaseConnection::BaseConnection(const mc::Socket &socket) : socket(socket) {}
 
@@ -16,10 +18,11 @@ mc::BaseConnection *mc::BaseConnection::handle_packet(mc::Buffer &packet) {
     packet.read(packet_id);
 
     // match packet type
-    BasePacket *concrete_packet = match_packet(*packet_id, packet);
+    // TODO match_packet is leaked if anything errors
+    BasePacket *concrete_packet = match_packet(*packet_id, packet); // TODO is packet needed here?
     if (concrete_packet == nullptr) {
         std::ostringstream ss;
-        ss << "resolving packet id " << *packet_id << " in connection '" << typeid(this).name() << "'";
+        ss << "resolving packet id " << *packet_id << " in connection '" << type_name() << "'";
         throw Exception(ErrorType::kUnexpectedPacketId, ss.str());
     }
 
@@ -51,6 +54,7 @@ mc::BaseConnection::BaseConnection(const mc::BaseConnection &other) : socket(oth
 mc::ConnectionHandshaking::ConnectionHandshaking(const mc::Socket &socket) : BaseConnection(socket) {}
 
 mc::BasePacket *mc::ConnectionHandshaking::match_packet(mc::Varint::Int packet_id, mc::Buffer &packet) {
+    UNUSED(packet);
     switch (packet_id) {
         case 0x00:
             return new PacketHandshake;
@@ -61,6 +65,7 @@ mc::BasePacket *mc::ConnectionHandshaking::match_packet(mc::Varint::Int packet_i
 
 mc::BaseConnection *mc::ConnectionHandshaking::handle_packet(mc::BasePacket *packet, BasePacket **response) {
     auto *handshake = dynamic_cast<PacketHandshake *>(packet);
+    UNUSED(response);
 
     if (*handshake->next_state == 1) {
         // status
@@ -76,6 +81,8 @@ mc::BaseConnection *mc::ConnectionHandshaking::handle_packet(mc::BasePacket *pac
 }
 
 mc::BasePacket *mc::ConnectionStatus::match_packet(mc::Varint::Int packet_id, mc::Buffer &packet) {
+    UNUSED(packet);
+
     switch (packet_id) {
         case 0x00:
             return new PacketEmpty;
@@ -175,9 +182,13 @@ mc::BaseConnection *mc::ConnectionStatus::handle_packet(mc::BasePacket *packet, 
 
 
 mc::BasePacket *mc::ConnectionLogin::match_packet(mc::Varint::Int packet_id, mc::Buffer &packet) {
+    UNUSED(packet_id);
+    UNUSED(packet);
     throw mc::Exception(mc::ErrorType::kNotImplemented, "login");
 }
 
 mc::BaseConnection *mc::ConnectionLogin::handle_packet(mc::BasePacket *packet, BasePacket **response) {
+    UNUSED(packet);
+    UNUSED(response);
     throw mc::Exception(mc::ErrorType::kNotImplemented, "login");
 }

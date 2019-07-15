@@ -1,5 +1,6 @@
 #include "packet.h"
 #include "loguru.hpp"
+#include "util.h"
 #include <sstream>
 
 void mc::BasePacket::write(mc::Buffer &buffer) {
@@ -21,14 +22,16 @@ mc::Varint mc::BasePacket::calculate_full_length() const {
     // add packet_id in header
     body_length += packet_id.get_byte_count();
 
-    return body_length;
+    return mc::Varint(body_length);
 }
 
 void mc::BasePacket::read_body(mc::Buffer &buffer) {
+    UNUSED(buffer);
     throw Exception(ErrorType::kNotImplemented, "packet is outbound-only", typeid(this).name());
 }
 
 void mc::BasePacket::write_body(mc::Buffer &buffer) {
+    UNUSED(buffer);
     throw Exception(ErrorType::kNotImplemented, "packet is inbound-only", typeid(this).name());
 }
 
@@ -54,6 +57,7 @@ std::string mc::PacketHandshake::to_string() const {
 
 void mc::PacketEmpty::read_body(mc::Buffer &buffer) {
     // nop
+    UNUSED(buffer);
 }
 
 std::string mc::PacketEmpty::to_string() const {

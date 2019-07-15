@@ -5,7 +5,7 @@ set(LIB_SOURCES lib/loguru/loguru.cpp lib/loguru/loguru.hpp)
 
 # sources
 set(SOURCES src/connection.cpp src/connection.h src/packet.cpp src/packet.h src/types.cpp src/types.h src/io.cpp src/io.h
-        io_impl_socket.cpp)
+        io_impl_socket.cpp src/util.h)
 
 
 # create library
@@ -25,4 +25,4 @@ target_link_libraries(${PROJECT_NAME}
         )
 
 # errors
-#target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)

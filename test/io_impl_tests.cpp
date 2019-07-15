@@ -3,7 +3,7 @@
 #include "io.h"
 
 namespace mc {
-    ssize_t Socket::read(uint8_t *out, ssize_t n) {
+    size_t Socket::read(uint8_t *out, ssize_t n) {
         return buffer.read(out, n);
     }
 

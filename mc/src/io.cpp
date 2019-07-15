@@ -5,9 +5,9 @@
 #include "types.h"
 #include "loguru.hpp"
 
-mc::Buffer::Buffer() : cursor(0), len(0), capacity(0) {}
+mc::Buffer::Buffer() : len(0), capacity(0), cursor(0) {}
 
-mc::Buffer::Buffer(const uint8_t *input, size_t len) : len(len), capacity(len), cursor(0), buf(input, input + len) {}
+mc::Buffer::Buffer(const uint8_t *input, size_t len) : buf(input, input + len), len(len), capacity(len), cursor(0) {}
 
 size_t mc::Buffer::read(uint8_t *out, ssize_t n) {
     int left = len - cursor;
@@ -52,10 +52,7 @@ mc::Buffer mc::Socket::read() {
     DLOG_F(INFO, "packet decoded length is %d (%d bytes)", decoded_length, length.get_byte_count());
 
     // allocate buffer for full body
-    auto *body = static_cast<uint8_t *>(malloc(decoded_length));
-    if (body == nullptr) {
-        throw Exception(ErrorType::kMemory, "allocating packet body");
-    }
+    auto *body = new uint8_t[decoded_length];
 
     // write overread bytes into buffer
     ssize_t overread = n - length.get_byte_count();
@@ -64,7 +61,7 @@ mc::Buffer mc::Socket::read() {
 
     // read rest of body
     uint8_t *body_write = body + overread;
-    size_t total_read = overread;
+    auto total_read = overread;
     while (total_read < decoded_length) {
         size_t left = decoded_length - total_read;
 
@@ -78,13 +75,13 @@ mc::Buffer mc::Socket::read() {
     }
 
     Buffer ret = Buffer(body, decoded_length);
-    free(body);
+    delete[] body;
     return ret;
 }
 
 void mc::Socket::write(const mc::Buffer &in) {
 
-    ssize_t n = write((uint8_t *) in.buf.data(), in.len);
+    size_t n = write((uint8_t *) in.buf.data(), in.len);
     if (n != in.len) {
         LOG_F(ERROR, "only wrote %zd/%zu", n, in.len);
         throw Exception(ErrorType::kIo, "writing body", std::to_string(n));
@@ -143,7 +140,7 @@ void mc::Buffer::read(mc::String &out) {
     // null terminate
     string[*length] = 0;
 
-    out = String(*length, (char *) string);
+    out = std::move(String(*length, (char *) string));
 }
 
 template<>
@@ -152,7 +149,7 @@ void mc::Buffer::write(const mc::String &value) {
     write(length);
 
     size_t n = write((uint8_t *) *value, *length);
-    if (n != *length) {
+    if ((int) n != *length) {
         throw Exception(ErrorType::kTooShort, "could not write full string", std::to_string(*length));
     }
 }

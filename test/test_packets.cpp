@@ -13,9 +13,10 @@ TEST_CASE("packets", "[packets]") {
         mc::Buffer buffer(socket.read());
 
         mc::PacketHandshake handshake;
-        handshake.read(buffer);
-
+        buffer.read(handshake.packet_id);
         REQUIRE(*handshake.packet_id == 0);
+
+        handshake.read_body(buffer);
         REQUIRE(*handshake.protocol_version == 490);
         REQUIRE(!strcmp(handshake.server_address.value(), "localhost"));
         REQUIRE(handshake.server_port == 25565);

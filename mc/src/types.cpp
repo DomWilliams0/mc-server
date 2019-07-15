@@ -1,8 +1,10 @@
+#include <memory>
+
 #include <cassert>
 #include "types.h"
 #include "loguru.hpp"
 
-int mc::Varint::get_byte_count() const {
+unsigned int mc::Varint::get_byte_count() const {
     return byte_count;
 }
 
@@ -83,7 +85,8 @@ void mc::Exception::log() const {
 }
 
 mc::String::String(mc::Varint::Int length, char *str) : len(length) {
-    this->str = new char[length + 1];
-    std::copy(str, str + length, this->str);
-    this->str[length] = '\0';
+    this->str = std::make_unique<char[]>(length + 1);
+    std::copy(str, str + length, this->str.get());
+    this->str.get()[length] = '\0';
 }
+

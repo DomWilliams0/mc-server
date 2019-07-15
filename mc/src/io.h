@@ -46,7 +46,7 @@ namespace mc {
 
 #else
 
-        Socket(int socket) : socket(socket) {}
+        explicit Socket(int socket) : socket(socket) {}
 
 #endif
 
@@ -55,7 +55,7 @@ namespace mc {
         void write(const Buffer &in);
 
     private:
-        ssize_t read(uint8_t *out, ssize_t n);
+        size_t read(uint8_t *out, ssize_t n);
 
         // helper
         template<size_t n>
