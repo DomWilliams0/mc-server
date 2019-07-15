@@ -1,5 +1,6 @@
-#include <CLucene.h>
+#include <cassert>
 #include "types.h"
+#include "loguru.hpp"
 
 int mc::Varint::get_byte_count() const {
     return byte_count;
@@ -43,4 +44,35 @@ mc::Varint::Varint(const mc::Varint::Bytes &bytes) {
     std::copy(std::begin(bytes), std::end(bytes), std::begin(this->bytes));
     this->byte_count = i;
     this->real_value = out;
+}
+
+void mc::Exception::log() const {
+    const char *err;
+    switch (type) {
+        case ErrorType::kIo:
+            err = "Io";
+            break;
+        case ErrorType::kTooShort:
+            err = "TooShort";
+            break;
+        case ErrorType::kBadEnum:
+            err = "BadEnum";
+            break;
+        case ErrorType::kUnexpectedRequest:
+            err = "UnexpectedRequest";
+            break;
+        case ErrorType::kNotImplemented:
+            err = "NotImplemented";
+            break;
+    }
+
+
+    if (strerror.empty())
+        LOG_F(ERROR, "error %s: %s", err, reason.c_str());
+    else
+        LOG_F(ERROR, "error %s: %s (%s)", err, reason.c_str(), strerror.c_str());
+}
+
+mc::String::String(mc::Varint::Int length, char *str) : len(length), str(str) {
+
 }

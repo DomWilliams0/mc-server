@@ -3,20 +3,39 @@
 
 #include <cstdint>
 #include <array>
+#include <exception>
 
 namespace mc {
     enum class ErrorType {
         kIo,
         kTooShort,
+        kMemory,
         kBadEnum,
         kUnexpectedRequest,
-        kNotImplemented
+        kEof,
+        kNotImplemented,
+    };
+
+    class Exception : public std::exception {
+    public:
+        Exception(ErrorType type, std::string reason, std::string strerror = "") :
+                type(type), reason(std::move(reason)), strerror(std::move(strerror)) {}
+
+
+        void log() const;
+
+        ErrorType type;
+        std::string reason, strerror;
+
+
     };
 
     class Varint {
     public:
         using Bytes = std::array<uint8_t, 5>;
         using Int = int32_t;
+
+        Varint() : Varint(0) {};
 
         Varint(Int value);
 
@@ -29,10 +48,10 @@ namespace mc {
 
         const Bytes &get_bytes() const;
 
+        inline Int operator*() const { return get_real_value(); }
+
 
     private:
-        Varint() {}
-
         int byte_count;
         Int real_value;
         Bytes bytes{};
@@ -44,7 +63,11 @@ namespace mc {
 
     class String {
     public:
+        String() : String(0, nullptr) {}
+
         String(Varint::Int length, char *str);
+
+        inline const char * const value() const { return str; }
 
     private:
         Varint len;

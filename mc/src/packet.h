@@ -2,27 +2,43 @@
 #define MC_SERVER_PACKET_H
 
 #include "types.h"
+#include "io.h"
 
 namespace mc {
 
-
-    struct BasePacket {
-
+    class BasePacket {
+    public:
         Varint packet_id;
 
-        void read(int fd);
+        void read(Buffer &buffer);
 
-        void write(int fd);
+        void write(Buffer &buffer);
 
-
-    private:
         Varint::Int calculate_full_length() const;
 
     protected:
         // length of all packet-specific fields
         virtual Varint::Int calculate_body_length() const = 0;
 
-//        virtual void
+        virtual void read_body(Buffer &buffer) = 0;
+
+        virtual void write_body(Buffer &buffer) = 0;
+    };
+
+
+    class PacketHandshake : public BasePacket {
+    protected:
+        Varint::Int calculate_body_length() const override;
+
+        void read_body(Buffer &buffer) override;
+
+        void write_body(Buffer &buffer) override;
+
+    public:
+        Varint protocol_version;
+        String server_address;
+        UShort server_port{};
+        Varint next_state;
     };
 
 
