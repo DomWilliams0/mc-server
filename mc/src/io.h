@@ -20,15 +20,22 @@ namespace mc {
 
         size_t read(uint8_t *out, ssize_t n);
 
+        bool empty() const { return len == 0; }
+
         size_t write(uint8_t *in, ssize_t n);
 
         template<typename T>
         void read(T &out);
 
+        template<typename T>
+        void write(const T &value);
+
 
     private:
         std::vector<uint8_t> buf;
         size_t len, capacity, cursor;
+
+        friend class Socket;
     };
 
     class Socket {
@@ -38,7 +45,9 @@ namespace mc {
         Socket(const uint8_t *input, size_t len) : buffer(input, len) {}
 
 #else
+
         Socket(int socket) : socket(socket) {}
+
 #endif
 
         Buffer read();
@@ -68,13 +77,23 @@ namespace mc {
     void Buffer::read(Varint &out);
 
     template<>
+    void Buffer::write(const Varint &value);
+
+    template<>
     void Buffer::read(String &out);
+
+    template<>
+    void Buffer::write(const String &value);
 
     template<>
     void Buffer::read(UShort &out);
 
     template<>
     void Buffer::read(Long &out);
+
+    template<>
+    void Buffer::write(const Long &value);
+
 }
 
 #endif

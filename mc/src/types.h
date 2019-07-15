@@ -12,6 +12,7 @@ namespace mc {
         kMemory,
         kBadEnum,
         kUnexpectedRequest,
+        kUnexpectedPacketId,
         kEof,
         kNotImplemented,
     };
@@ -19,13 +20,13 @@ namespace mc {
     class Exception : public std::exception {
     public:
         Exception(ErrorType type, std::string reason, std::string strerror = "") :
-                type(type), reason(std::move(reason)), strerror(std::move(strerror)) {}
+                type(type), reason(std::move(reason)), context(std::move(strerror)) {}
 
 
         void log() const;
 
         ErrorType type;
-        std::string reason, strerror;
+        std::string reason, context;
 
 
     };
@@ -65,9 +66,14 @@ namespace mc {
     public:
         String() : String(0, nullptr) {}
 
+        // copied
         String(Varint::Int length, char *str);
 
-        inline const char * const value() const { return str; }
+        inline const char *value() const { return str; }
+
+        inline const char *operator*() const { return value(); }
+
+        inline const Varint &length() const { return len; }
 
     private:
         Varint len;

@@ -1,9 +1,34 @@
-#include <iostream>
 #include "io.h"
+#include "loguru.hpp"
+#include "connection.h"
+
+static void handle_connection(int fd) {
+    mc::Socket socket(fd);
+    mc::BaseConnection *connection;
+
+    // starts as handshaking
+    connection = new mc::ConnectionHandshaking(socket);
+
+    try {
+        while (connection->keep_alive()) {
+            DLOG_F(INFO, "=========== reading a new packet =========== ");
+            mc::Buffer packet(socket.read());
+            mc::BaseConnection *new_connection = connection->handle_packet(packet);
+
+            if (new_connection != connection) {
+                LOG_F(INFO, "changing state from %s to %s",
+                      connection->type_name().c_str(), new_connection->type_name().c_str());
+                delete connection;
+                connection = new_connection;
+            }
+        }
+    } catch (const mc::Exception &e) {
+        e.log();
+    }
+
+}
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
-    mc::Socket sock;
-    sock.do_thing();
-    return 0;
+    extern void start_server(int port, void (*handler)(int));
+    start_server(25565, handle_connection);
 }

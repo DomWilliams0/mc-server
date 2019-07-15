@@ -64,15 +64,26 @@ void mc::Exception::log() const {
         case ErrorType::kNotImplemented:
             err = "NotImplemented";
             break;
+        case ErrorType::kMemory:
+            err = "Memory";
+            break;
+        case ErrorType::kUnexpectedPacketId:
+            err = "UnexpectedPacketId";
+            break;
+        case ErrorType::kEof:
+            err = "Eof";
+            break;
     }
 
 
-    if (strerror.empty())
+    if (context.empty())
         LOG_F(ERROR, "error %s: %s", err, reason.c_str());
     else
-        LOG_F(ERROR, "error %s: %s (%s)", err, reason.c_str(), strerror.c_str());
+        LOG_F(ERROR, "error %s: %s (%s)", err, reason.c_str(), context.c_str());
 }
 
-mc::String::String(mc::Varint::Int length, char *str) : len(length), str(str) {
-
+mc::String::String(mc::Varint::Int length, char *str) : len(length) {
+    this->str = new char[length + 1];
+    std::copy(str, str + length, this->str);
+    this->str[length] = '\0';
 }

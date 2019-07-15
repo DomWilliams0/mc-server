@@ -44,7 +44,7 @@ mc::Buffer mc::Socket::read() {
     // read varint length
     mc::Varint::Bytes length_buffer;
     ssize_t n = read(length_buffer);
-    if (n != length_buffer.size())
+    if (n < 1)
         throw Exception(ErrorType::kTooShort, "reading packet length");
 
     mc::Varint length(length_buffer);
@@ -77,11 +77,18 @@ mc::Buffer mc::Socket::read() {
         DLOG_F(INFO, "read %zu/%d", total_read, decoded_length);
     }
 
-    return Buffer(body, decoded_length);
+    Buffer ret = Buffer(body, decoded_length);
+    free(body);
+    return ret;
 }
 
 void mc::Socket::write(const mc::Buffer &in) {
 
+    ssize_t n = write((uint8_t *) in.buf.data(), in.len);
+    if (n != in.len) {
+        LOG_F(ERROR, "only wrote %zd/%zu", n, in.len);
+        throw Exception(ErrorType::kIo, "writing body", std::to_string(n));
+    }
 }
 
 // -----------
@@ -92,6 +99,10 @@ void mc::Buffer::read(mc::Varint &out) {
     Varint::Bytes bytes;
     ssize_t n = read(bytes.data(), bytes.size());
 
+    if (n < 1) {
+        throw Exception(ErrorType::kTooShort, "not enough bytes for varint");
+    }
+
     // decode
     out = Varint(bytes);
 
@@ -99,6 +110,15 @@ void mc::Buffer::read(mc::Varint &out) {
     int overread = n - out.get_byte_count();
     cursor -= overread;
 }
+
+template<>
+void mc::Buffer::write(const mc::Varint &value) {
+    size_t n = write((uint8_t *) value.get_bytes().data(), value.get_byte_count());
+    if (n != value.get_byte_count()) {
+        throw Exception(ErrorType::kTooShort, "could not write full varint");
+    }
+}
+
 
 template<>
 void mc::Buffer::read(mc::String &out) {
@@ -127,6 +147,17 @@ void mc::Buffer::read(mc::String &out) {
 }
 
 template<>
+void mc::Buffer::write(const mc::String &value) {
+    const Varint &length = value.length();
+    write(length);
+
+    size_t n = write((uint8_t *) *value, *length);
+    if (n != *length) {
+        throw Exception(ErrorType::kTooShort, "could not write full string", std::to_string(*length));
+    }
+}
+
+template<>
 void mc::Buffer::read(mc::UShort &out) {
     UShort tmp;
     ssize_t n = read((uint8_t *) &tmp, sizeof(tmp));
@@ -150,4 +181,16 @@ void mc::Buffer::read(mc::Long &out) {
     }
 
     out = be64toh(tmp);
+}
+
+
+template<>
+void mc::Buffer::write(const mc::Long &value) {
+    Long tmp = htobe64(value);
+
+    size_t n = write((uint8_t *) &tmp, sizeof(tmp));
+    if (n != sizeof(tmp)) {
+        throw Exception(ErrorType::kTooShort, "could not write Long");
+    }
+
 }
