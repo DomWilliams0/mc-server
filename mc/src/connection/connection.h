@@ -2,7 +2,7 @@
 #define MC_SERVER_CONNECTION_H
 
 #include "io.h"
-#include "packet/packet.h"
+#include "packet.h"
 
 namespace mc {
 
@@ -23,9 +23,9 @@ namespace mc {
 
 
     protected:
-        virtual BasePacket *match_packet(Varint::Int packet_id, mc::Buffer &packet) = 0;
+        virtual PacketServerBound *match_packet(Varint::Int packet_id) = 0;
 
-        virtual BaseConnection *handle_packet(mc::BasePacket *packet, BasePacket **response) = 0;
+        virtual BaseConnection *handle_packet(PacketServerBound *packet, PacketClientBound **response) = 0;
 
 
         mc::Socket socket;
@@ -38,9 +38,9 @@ namespace mc {
 
     protected:
 
-        BasePacket *match_packet(Varint::Int packet_id, mc::Buffer &packet) override;
+        PacketServerBound *match_packet(Varint::Int packet_id) override;
 
-        BaseConnection *handle_packet(mc::BasePacket *packet, BasePacket **response) override;
+        BaseConnection *handle_packet(PacketServerBound *packet, PacketClientBound **response) override;
     };
 
     class ConnectionStatus : public BaseConnection {
@@ -49,9 +49,9 @@ namespace mc {
         explicit ConnectionStatus(const BaseConnection &other) : BaseConnection(other) {}
 
     protected:
-        BasePacket *match_packet(Varint::Int packet_id, mc::Buffer &packet) override;
+        PacketServerBound *match_packet(Varint::Int packet_id) override;
 
-        BaseConnection *handle_packet(mc::BasePacket *packet, BasePacket **response) override;
+        BaseConnection *handle_packet(PacketServerBound *packet, PacketClientBound **response) override;
 
     };
 
@@ -60,9 +60,9 @@ namespace mc {
         explicit ConnectionLogin(const BaseConnection &other) : BaseConnection(other) {}
 
     protected:
-        BasePacket *match_packet(Varint::Int packet_id, mc::Buffer &packet) override;
+        PacketServerBound *match_packet(Varint::Int packet_id) override;
 
-        BaseConnection *handle_packet(mc::BasePacket *packet, BasePacket **response) override;
+        BaseConnection *handle_packet(PacketServerBound *packet, PacketClientBound **response) override;
     };
 
 }

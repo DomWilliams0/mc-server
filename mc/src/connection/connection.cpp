@@ -1,5 +1,5 @@
 #include "connection.h"
-#include "packet/packet.h"
+#include "packet.h"
 #include "loguru.hpp"
 
 #include <sstream>
@@ -15,7 +15,7 @@ mc::BaseConnection *mc::BaseConnection::handle_packet(mc::Buffer &packet) {
 
     // match packet type
     // TODO match_packet is leaked if anything errors
-    BasePacket *concrete_packet = match_packet(*packet_id, packet); // TODO is packet needed here?
+    PacketServerBound *concrete_packet = match_packet(*packet_id);
     if (concrete_packet == nullptr) {
         std::ostringstream ss;
         ss << "resolving packet id " << *packet_id << " in connection '" << type_name() << "'";
@@ -24,10 +24,10 @@ mc::BaseConnection *mc::BaseConnection::handle_packet(mc::Buffer &packet) {
 
     // populate packet fields
     concrete_packet->read_body(packet);
-    DLOG_F(INFO, "packet: %s", concrete_packet->to_string().c_str());
+    DLOG_F(INFO, "inbound packet: %s", concrete_packet->to_string().c_str());
 
     // handle packet in connection, maybe generating a response and a new state
-    mc::BasePacket *response = nullptr;
+    mc::PacketClientBound *response = nullptr;
     BaseConnection *new_connection = handle_packet(concrete_packet, &response);
 
     // send response if necessary

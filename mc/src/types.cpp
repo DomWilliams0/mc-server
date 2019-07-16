@@ -75,6 +75,9 @@ void mc::Exception::log() const {
         case ErrorType::kEof:
             err = "Eof";
             break;
+        case ErrorType::kBadField:
+            err = "BadField";
+            break;
     }
 
 

@@ -1,12 +1,11 @@
 #include "connection.h"
-#include "packet/packet.h"
+#include "packet.h"
 #include "util.h"
 
 
 mc::ConnectionHandshaking::ConnectionHandshaking(const mc::Socket &socket) : BaseConnection(socket) {}
 
-mc::BasePacket *mc::ConnectionHandshaking::match_packet(mc::Varint::Int packet_id, mc::Buffer &packet) {
-    UNUSED(packet);
+mc::PacketServerBound *mc::ConnectionHandshaking::match_packet(Varint::Int packet_id) {
     switch (packet_id) {
         case 0x00:
             return new PacketHandshake;
@@ -15,16 +14,17 @@ mc::BasePacket *mc::ConnectionHandshaking::match_packet(mc::Varint::Int packet_i
     }
 }
 
-mc::BaseConnection *mc::ConnectionHandshaking::handle_packet(mc::BasePacket *packet, BasePacket **response) {
+mc::BaseConnection *mc::ConnectionHandshaking::handle_packet(PacketServerBound *packet, PacketClientBound **response) {
     auto *handshake = dynamic_cast<PacketHandshake *>(packet);
     UNUSED(response);
+    Varint next_state = handshake->get_field_value<Varint>("next_state");
 
-    if (*handshake->next_state == 1) {
+    if (*next_state == 1) {
         // status
         return new ConnectionStatus(*this);
     }
 
-    if (*handshake->next_state == 2) {
+    if (*next_state == 2) {
         // login
         return new ConnectionLogin(*this);
     }

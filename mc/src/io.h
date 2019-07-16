@@ -89,6 +89,9 @@ namespace mc {
     void Buffer::read(UShort &out);
 
     template<>
+    void Buffer::write(const UShort &value);
+
+    template<>
     void Buffer::read(Long &out);
 
     template<>

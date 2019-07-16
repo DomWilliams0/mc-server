@@ -168,6 +168,16 @@ void mc::Buffer::read(mc::UShort &out) {
 }
 
 template<>
+void mc::Buffer::write(const mc::UShort &value) {
+    UShort tmp = htonl(value);
+
+    size_t n = write((uint8_t *) &tmp, sizeof(tmp));
+    if (n != sizeof(tmp)) {
+        throw Exception(ErrorType::kTooShort, "could not write UShort");
+    }
+}
+
+template<>
 void mc::Buffer::read(mc::Long &out) {
     Long tmp;
     ssize_t n = read((uint8_t *) &tmp, sizeof(tmp));

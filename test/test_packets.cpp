@@ -1,8 +1,9 @@
 #include "catch.hpp"
+#include "packet.h"
 #include "types.h"
 #include "io.h"
-#include "packet/packet.h"
 #include <cstring>
+#include <iostream>
 
 TEST_CASE("packets", "[packets]") {
     SECTION("handshake") {
@@ -17,9 +18,9 @@ TEST_CASE("packets", "[packets]") {
         REQUIRE(*handshake.packet_id == 0);
 
         handshake.read_body(buffer);
-        REQUIRE(*handshake.protocol_version == 490);
-        REQUIRE(!strcmp(handshake.server_address.value(), "localhost"));
-        REQUIRE(handshake.server_port == 25565);
-        REQUIRE(*handshake.next_state == 1);
+        REQUIRE(*handshake.get_field_value<mc::Varint>("protocol_version") == 490);
+        REQUIRE(!strcmp(handshake.get_field_value<mc::String>("server_address").value(), "localhost"));
+        REQUIRE(handshake.get_field_value<mc::UShort>("server_port") == 25565);
+        REQUIRE(*handshake.get_field_value<mc::Varint>("next_state") == 1);
     }
 }

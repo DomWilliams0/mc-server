@@ -1,13 +1,11 @@
 #include "connection.h"
-#include "packet/packet.h"
+#include "packet.h"
 #include "loguru.hpp"
 #include "util.h"
 
 #include <cstring>
 
-mc::BasePacket *mc::ConnectionStatus::match_packet(mc::Varint::Int packet_id, mc::Buffer &packet) {
-    UNUSED(packet);
-
+mc::PacketServerBound *mc::ConnectionStatus::match_packet(Varint::Int packet_id) {
     switch (packet_id) {
         case 0x00:
             return new PacketEmpty;
@@ -18,7 +16,7 @@ mc::BasePacket *mc::ConnectionStatus::match_packet(mc::Varint::Int packet_id, mc
     }
 }
 
-mc::BaseConnection *mc::ConnectionStatus::handle_packet(mc::BasePacket *packet, BasePacket **response) {
+mc::BaseConnection *mc::ConnectionStatus::handle_packet(PacketServerBound *packet, PacketClientBound **response) {
     if (*packet->packet_id == 0x00) {
 
         char json[] = "{\"description\":{\"text\":\"My Nice Server\"},\"players\":{\"max\":800,\"online\":409},"
@@ -96,10 +94,17 @@ mc::BaseConnection *mc::ConnectionStatus::handle_packet(mc::BasePacket *packet, 
                       "RVh0ZGF0ZTpjcmVhdGUAMjAxOS0wNy0xNVQxNzozMDozNyswMDowMFFlOFMAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTktMDct"
                       "MTVUMTc6MzA6MjQrMDA6MDDdeprsAAAAAElFTkSuQmCC\"}";
         auto len = strlen(json);
-        *response = new PacketStatusResponse(String(len, json));
+        auto *status = new PacketStatusResponse;
+        status->get_field_value<String>("status") = String(len, json);
+
+        *response = status;
     } else if (*packet->packet_id == 0x01) {
         auto ping = dynamic_cast<PacketPing *>(packet);
-        *response = new PacketPong(ping->payload);
+
+        auto *pong = new PacketPong;
+        pong->get_field_value<Long>("payload") = ping->get_field_value<Long>("payload");
+        *response = pong;
+
         keep_alive_ = false;
     }
     return this;

@@ -10,13 +10,8 @@ set(SOURCES
         src/connection/handshake.cpp
         src/connection/status.cpp
         src/connection/login.cpp
-        src/packet/packet.cpp
-        src/packet/packet.h
-        src/packet/cb_pong.cpp
-        src/packet/cb_status.cpp
-        src/packet/sb_empty.cpp
-        src/packet/sb_handshake.cpp
-        src/packet/sb_ping.cpp
+        src/packet.cpp
+        src/packet.h
         src/types.cpp
         src/types.h
         src/io.cpp

@@ -16,6 +16,7 @@ namespace mc {
         kUnexpectedPacketId,
         kEof,
         kNotImplemented,
+        kBadField,
     };
 
     class Exception : public std::exception {
