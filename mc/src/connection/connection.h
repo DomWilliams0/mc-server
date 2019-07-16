@@ -2,15 +2,9 @@
 #define MC_SERVER_CONNECTION_H
 
 #include "io.h"
-#include "packet.h"
+#include "packet/packet.h"
 
 namespace mc {
-
-    enum class ConnectionState {
-        kHandshaking = 0,
-        kStatus = 1,
-        kLogin = 2,
-    };
 
 
     class BaseConnection {
@@ -69,10 +63,6 @@ namespace mc {
         BasePacket *match_packet(Varint::Int packet_id, mc::Buffer &packet) override;
 
         BaseConnection *handle_packet(mc::BasePacket *packet, BasePacket **response) override;
-    };
-
-    class ConnectionPlay : public BaseConnection {
-
     };
 
 }

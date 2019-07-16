@@ -1,7 +1,7 @@
 #include "catch.hpp"
 #include "types.h"
 #include "io.h"
-#include "packet.h"
+#include "packet/packet.h"
 #include <cstring>
 
 TEST_CASE("packets", "[packets]") {
