@@ -3,9 +3,9 @@
 
 #include "io.h"
 #include "packet.h"
+#include "loguru.hpp"
 
 namespace mc {
-
 
     class BaseConnection {
     public:
@@ -19,14 +19,19 @@ namespace mc {
 
         BaseConnection *handle_packet(mc::Buffer &packet);
 
-        inline virtual std::string type_name() const { return typeid(*this).name(); }
+        virtual std::string type_name() const = 0;
 
 
     protected:
-        virtual PacketServerBound *match_packet(Varint::Int packet_id) = 0;
+        virtual BaseConnection *handle_packet(Varint::Int packet_id, Buffer &packet, PacketClientBound **response) = 0;
 
-        virtual BaseConnection *handle_packet(PacketServerBound *packet, PacketClientBound **response) = 0;
-
+        template<typename T>
+        T read_inbound_packet(Buffer &buffer) {
+            T t;
+            t.read_body(buffer);
+            DLOG_F(INFO, "inbound packet: %s", t.to_string().c_str());
+            return t;
+        }
 
         mc::Socket socket;
         bool keep_alive_ = true;
@@ -36,11 +41,10 @@ namespace mc {
     public:
         explicit ConnectionHandshaking(const Socket &socket);
 
+        inline std::string type_name() const override { return "handshake"; }
+
     protected:
-
-        PacketServerBound *match_packet(Varint::Int packet_id) override;
-
-        BaseConnection *handle_packet(PacketServerBound *packet, PacketClientBound **response) override;
+        BaseConnection *handle_packet(Varint::Int packet_id, Buffer &packet, PacketClientBound **response) override;
     };
 
     class ConnectionStatus : public BaseConnection {
@@ -48,10 +52,10 @@ namespace mc {
     public:
         explicit ConnectionStatus(const BaseConnection &other) : BaseConnection(other) {}
 
-    protected:
-        PacketServerBound *match_packet(Varint::Int packet_id) override;
+        inline std::string type_name() const override { return "status"; }
 
-        BaseConnection *handle_packet(PacketServerBound *packet, PacketClientBound **response) override;
+    protected:
+        BaseConnection *handle_packet(Varint::Int packet_id, Buffer &packet, PacketClientBound **response) override;
 
     };
 
@@ -59,10 +63,10 @@ namespace mc {
     public:
         explicit ConnectionLogin(const BaseConnection &other) : BaseConnection(other) {}
 
-    protected:
-        PacketServerBound *match_packet(Varint::Int packet_id) override;
+        inline std::string type_name() const override { return "login"; }
 
-        BaseConnection *handle_packet(PacketServerBound *packet, PacketClientBound **response) override;
+    protected:
+        BaseConnection *handle_packet(Varint::Int packet_id, Buffer &packet, PacketClientBound **response) override;
     };
 
 }

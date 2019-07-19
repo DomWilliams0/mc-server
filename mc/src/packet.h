@@ -172,6 +172,20 @@ namespace mc {
         }) {}
     };
 
+    struct PacketLoginStart : public PacketServerBound {
+        PacketLoginStart() : PacketServerBound(0x00, "login_start", {
+                new StringField("name"), // TODO string limit
+        }) {}
+    };
+
+    struct PacketLoginSuccess : public PacketClientBound {
+        PacketLoginSuccess() : PacketClientBound(0x02, "login_success", {
+                // TODO string limits
+                new StringField("uuid"),
+                new StringField("username"),
+        }) {}
+    };
+
     template<typename T>
     T &mc::Packet::get_field_value(const std::string &field_name) {
         // TODO ordered map?

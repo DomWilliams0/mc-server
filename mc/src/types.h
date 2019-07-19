@@ -69,7 +69,7 @@ namespace mc {
         String() : String(0, nullptr) {}
 
         // copied
-        String(Varint::Int length, char *str);
+        String(Varint::Int length, const char *str);
 
         inline const char *value() const { return str.get(); }
 
