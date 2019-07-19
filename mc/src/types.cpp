@@ -87,9 +87,3 @@ void mc::Exception::log() const {
         LOG_F(ERROR, "error %s: %s (%s)", err, reason.c_str(), context.c_str());
 }
 
-mc::String::String(mc::Varint::Int length, const char *str) : len(length) {
-    this->str = std::make_unique<char[]>(length + 1);
-    std::copy(str, str + length, this->str.get());
-    this->str.get()[length] = '\0';
-}
-

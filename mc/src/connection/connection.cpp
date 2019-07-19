@@ -12,6 +12,7 @@ mc::BaseConnection *mc::BaseConnection::handle_packet(mc::Buffer &packet) {
     // parse header
     Varint packet_id;
     packet.read(packet_id);
+    DLOG_F(INFO, "packet id is %d", *packet_id);
 
     // pass off to this connection to read and handle
     mc::PacketClientBound *response = nullptr;

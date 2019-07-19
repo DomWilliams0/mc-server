@@ -69,6 +69,16 @@ namespace mc {
         BaseConnection *handle_packet(Varint::Int packet_id, Buffer &packet, PacketClientBound **response) override;
     };
 
+    class ConnectionPlay : public BaseConnection {
+    public:
+        explicit ConnectionPlay(const BaseConnection &other) : BaseConnection(other) {}
+
+        inline std::string type_name() const override { return "play"; }
+
+    protected:
+        BaseConnection *handle_packet(Varint::Int packet_id, Buffer &packet, PacketClientBound **response) override;
+    };
+
 }
 
 #endif

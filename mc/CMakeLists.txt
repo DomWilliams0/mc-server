@@ -10,6 +10,7 @@ set(SOURCES
         src/connection/handshake.cpp
         src/connection/status.cpp
         src/connection/login.cpp
+        src/connection/play.cpp
         src/packet.cpp
         src/packet.h
         src/types.cpp

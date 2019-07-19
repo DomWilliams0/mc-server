@@ -66,19 +66,22 @@ namespace mc {
 
     class String {
     public:
-        String() : String(0, nullptr) {}
+        String() : String(0, "") {}
 
         // copied
-        String(Varint::Int length, const char *str);
+        String(mc::Varint::Int length, const char *str) : str(str), len(length) {}
 
-        inline const char *value() const { return str.get(); }
+        // copied
+        explicit String(const std::string &str) : String(str.size(), str.c_str()) {}
+
+        inline const char *value() const { return str.c_str(); }
 
         inline const char *operator*() const { return value(); }
 
         inline const Varint &length() const { return len; }
 
     private:
-        std::unique_ptr<char[]> str; // unicode
+        std::string str; // unicode
         Varint len;
     };
 
